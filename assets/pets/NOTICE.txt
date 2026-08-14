@@ -1,0 +1,3 @@
+默认宠物素材来自公开网络的粉丝 Codex 桌宠精灵表，仅供个人学习使用，请勿商用分发。
+取不到原始素材的角色使用同一精灵表重着色作为占位，可用 scripts/import_sheet.py 换成真实素材。
+Sources: github.com/erich207/nailong-codex-pet 等公开仓库。

@@ -1,0 +1,92 @@
+{
+  "id": "koukou",
+  "name": "扣扣企鹅",
+  "source": "default",
+  "personality": "koukou",
+  "scale": 1.0,
+  "active_variant": "acc_star_stick",
+  "walk_enabled": false,
+  "actions": {
+    "idle": {
+      "fps": 7,
+      "loop": true
+    },
+    "hit": {
+      "fps": 10,
+      "loop": false
+    },
+    "sleep": {
+      "fps": 4,
+      "loop": true
+    },
+    "eat": {
+      "fps": 7,
+      "loop": false
+    },
+    "wave": {
+      "fps": 8,
+      "loop": false
+    },
+    "walk_l": {
+      "fps": 10,
+      "loop": true
+    },
+    "walk_r": {
+      "fps": 10,
+      "loop": true
+    },
+    "vanish": {
+      "fps": 12,
+      "loop": false
+    },
+    "appear": {
+      "fps": 12,
+      "loop": false
+    },
+    "jump": {
+      "fps": 10,
+      "loop": false
+    },
+    "dance": {
+      "fps": 12,
+      "loop": true
+    },
+    "think": {
+      "fps": 5,
+      "loop": true
+    },
+    "shy": {
+      "fps": 7,
+      "loop": false
+    }
+  },
+  "variants": [
+    "acc_none",
+    "acc_hat_beanie",
+    "acc_hat_party",
+    "acc_hat_crown",
+    "acc_glasses_round",
+    "acc_glasses_sun",
+    "acc_bow",
+    "acc_scarf",
+    "acc_star_stick"
+  ],
+  "base_image": "base.png",
+  "authentic_art": true,
+  "frame_counts": {
+    "idle": 7,
+    "walk_r": 8,
+    "walk_l": 8,
+    "wave": 4,
+    "jump": 5,
+    "dance": 5,
+    "hit": 8,
+    "eat": 8,
+    "shy": 6,
+    "think": 6,
+    "sleep": 8,
+    "vanish": 8,
+    "appear": 8
+  },
+  "accessory_renderer": 2
+}

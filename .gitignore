@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+data/settings.json
+data/state.json
+data/*.lock
+data/user_pets/
+data/_sheet_cache/
+data/_probe/
+.local-secrets.json
+node_modules/
+out/
+build/
+dist/
+release/
+*.egg-info/
