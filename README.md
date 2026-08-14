@@ -25,16 +25,14 @@
 | `koukou` | 扣扣企鹅 | 画廊 `koukou-penguin--hoody` |
 | `capybara` | 水豚噜噜 | 画廊 `capybara-lulu--jiushu` |
 
-公开画廊里没有 章鱼哥 / 史迪仔 / 闪电 的 Codex 精灵表，因此这三个位置换成了同画廊里其他真实素材。
-若日后拿到对应精灵表（1536×1872 或 1536×2288 的 8 列 webp/png），放入 `data/_sheet_cache/<id>.webp`
+要增加宠物可拿到对应精灵表（1536×1872 或 1536×2288 的 8 列 webp/png），放入 `data/_sheet_cache/<id>.webp`
 后在 `scripts/build_pets.py` 的 `PETS` 里加一条，再重建即可。
 
 ## 运行
 
-必须在项目根目录 `G:\desktop-pet` 执行（不要进 `.venv\Scripts`）：
+必须在项目根目录：
 
 ```powershell
-cd G:\desktop-pet
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
 .\.venv\Scripts\python -m app.main
@@ -89,21 +87,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_release.ps1
 | 右键 → 缩放、桌面走动、打开工坊 | 其余设置 |
 | 托盘 | 显示宠物 / 打开工坊 / 退出 |
 
-## 动画来源
 
-精灵表按 Codex 桌宠约定切片（192×208 单元，8 列，v1 9 行 / v2 11 行）：
-
-| 行 | 语义 | 映射动作 |
-|----|------|----------|
-| 0 | idle | `idle` |
-| 1 / 2 | running right / left | `walk_r` / `walk_l` |
-| 3 | waving | `wave` |
-| 4 | jumping | `jump`、`dance` |
-| 5 | failed | `hit`（加冲击线与抖动） |
-| 6 | waiting | `eat`（加食物）、`shy`（加腮红） |
-| 8 | review | `think`（加思考气泡） |
-
-`sleep` 取闭眼帧后倾倒、呼吸并叠加上浮的 ZZZ；`vanish` / `appear` 用烟圈与淡出合成。
 
 ## 宠物包结构
 
