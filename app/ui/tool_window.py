@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.config import Settings
-from app.core.pack import PetPack, delete_pack, list_packs
+from app.core.pack import PetPack, delete_pack, get_pack, is_default_pack, list_packs
 
 
 class AccessoryWorker(QThread):
@@ -77,6 +77,8 @@ class ToolWindow(QWidget):
         btns = QHBoxLayout()
         self.btn_summon = QPushButton("放到桌面")
         self.btn_delete = QPushButton("删除")
+        self.btn_delete.setToolTip("默认宠物不可删除")
+        self.btn_delete.setEnabled(False)
         self.btn_refresh = QPushButton("刷新")
         btns.addWidget(self.btn_summon)
         btns.addWidget(self.btn_delete)
@@ -166,14 +168,33 @@ class ToolWindow(QWidget):
     def refresh(self) -> None:
         self.list.clear()
         for pack in list_packs():
-            item = QListWidgetItem(f"{pack.name} ({pack.source})")
+            if is_default_pack(pack):
+                label = f"{pack.name}（默认）"
+            else:
+                label = f"{pack.name} ({pack.source})"
+            item = QListWidgetItem(label)
             item.setData(Qt.ItemDataRole.UserRole, pack.id)
             self.list.addItem(item)
+        self._update_delete_button()
+
+    def _update_delete_button(self) -> None:
+        item = self.list.currentItem()
+        if not item:
+            self.btn_delete.setEnabled(False)
+            self.btn_delete.setToolTip("请先选择宠物")
+            return
+        pack = get_pack(item.data(Qt.ItemDataRole.UserRole))
+        if not pack or is_default_pack(pack):
+            self.btn_delete.setEnabled(False)
+            self.btn_delete.setToolTip("默认宠物不可删除")
+            return
+        self.btn_delete.setEnabled(True)
+        self.btn_delete.setToolTip("删除该用户宠物")
 
     def _on_select(self, cur: QListWidgetItem | None, _prev) -> None:
+        self._update_delete_button()
         if not cur:
             return
-        from app.core.pack import get_pack
 
         pack = get_pack(cur.data(Qt.ItemDataRole.UserRole))
         if not pack:
@@ -197,8 +218,12 @@ class ToolWindow(QWidget):
         if not item:
             return
         pet_id = item.data(Qt.ItemDataRole.UserRole)
+        pack = get_pack(pet_id)
+        if pack and is_default_pack(pack):
+            QMessageBox.warning(self, "无法删除", "默认宠物不可删除")
+            return
         if not delete_pack(pet_id):
-            QMessageBox.warning(self, "无法删除", "默认宠物不能删除，或宠物不存在")
+            QMessageBox.warning(self, "无法删除", "默认宠物不可删除，或宠物不存在")
             return
         self.refresh()
 

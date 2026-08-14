@@ -10,6 +10,11 @@ from typing import Any
 from app.config import ACTIONS, default_manifest
 from app.paths import PETS_ASSETS, USER_PETS, ensure_dirs
 
+# Built-in pets shipped under assets/pets — never deletable from the workshop.
+DEFAULT_PET_IDS = frozenset(
+    {"nailong", "dagongniu", "salarycat", "koukou", "capybara"}
+)
+
 
 @dataclass
 class PetPack:
@@ -155,6 +160,18 @@ def get_pack(pet_id: str) -> PetPack | None:
     return None
 
 
+def is_default_pack(pack: PetPack) -> bool:
+    """True for the five built-in pets (and anything still living under assets/pets)."""
+    if pack.id in DEFAULT_PET_IDS:
+        return True
+    try:
+        if pack.root.resolve().parent == PETS_ASSETS.resolve():
+            return True
+    except OSError:
+        pass
+    return False
+
+
 def create_pack_dir(
     root: Path,
     pet_id: str,
@@ -177,7 +194,7 @@ def delete_pack(pet_id: str) -> bool:
     pack = get_pack(pet_id)
     if not pack:
         return False
-    if pack.source == "default" or pack.root.parent == PETS_ASSETS:
+    if is_default_pack(pack):
         return False
     shutil.rmtree(pack.root, ignore_errors=True)
     return True
