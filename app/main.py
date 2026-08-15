@@ -19,8 +19,6 @@ from app.ui.tool_window import ToolWindow
 CHAT_ACTIONS: list[tuple[tuple[str, ...], str]] = [
     (("隐藏", "消失", "走开"), "vanish"),
     (("出来", "现身", "回来"), "appear"),
-    (("睡觉", "困了", "晚安"), "sleep"),
-    (("吃饭", "饿了", "干饭"), "eat"),
     (("跳舞", "摇"), "dance"),
     (("跳一下", "蹦"), "jump"),
     (("你好", "嗨", "招手"), "wave"),

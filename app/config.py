@@ -41,12 +41,13 @@ ACTION_MENU = [
     ("dance", "跳舞"),
     ("think", "思考"),
     ("shy", "害羞"),
-    ("eat", "吃饭"),
-    ("sleep", "睡觉"),
     ("hit", "打它"),
 ]
 
-LOOPING_ACTIONS = {"idle", "sleep", "walk_l", "walk_r", "dance", "think"}
+# Removed from gameplay; sprite folders may still exist for pack compatibility.
+DISABLED_ACTIONS = frozenset({"eat", "sleep"})
+
+LOOPING_ACTIONS = {"idle", "walk_l", "walk_r", "dance", "think"}
 
 ACCESSORY_PROMPTS = {
     "acc_none": "",

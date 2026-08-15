@@ -4,7 +4,7 @@ import random
 
 from PySide6.QtCore import QObject, QTimer, Signal
 
-from app.config import LOOPING_ACTIONS
+from app.config import DISABLED_ACTIONS, LOOPING_ACTIONS
 from app.core.dialogue import random_bubble
 from app.core.pack import PetPack
 from app.core.sprite_player import SpritePlayer
@@ -12,7 +12,6 @@ from app.core.sprite_player import SpritePlayer
 
 ACTION_REPEAT = {
     "wave": 3,
-    "eat": 3,
     "hit": 2,
     "jump": 2,
     "shy": 2,
@@ -20,8 +19,6 @@ ACTION_REPEAT = {
 
 ACTION_LINES = {
     "hit": "哎呦！",
-    "sleep": "呼……我先睡一会儿。",
-    "eat": "干饭时间到！",
     "wave": "你好呀～",
     "jump": "嘿！",
     "dance": "一起摇起来～",
@@ -78,20 +75,22 @@ class PetController(QObject):
         self.player.play(action, force=True, repeat=repeat)
         self._back_to_idle.stop()
         # looping moods (dance / think) have no end frame, so time-box them
-        if action in LOOPING_ACTIONS and action not in {"idle", "sleep", "walk_l", "walk_r"}:
+        if action in LOOPING_ACTIONS and action not in {"idle", "walk_l", "walk_r"}:
             self._back_to_idle.start(3200)
         self.action_started.emit(action)
 
     def _idle_again(self) -> None:
-        if self._hidden or self._sleeping:
+        if self._hidden:
             return
         self._play("idle")
 
     def do(self, action: str, announce: bool = True) -> None:
         """Trigger any action from the menu, with pacing and a matching line."""
+        if action in DISABLED_ACTIONS:
+            return
         if self._hidden and action != "appear":
             return
-        self._sleeping = action == "sleep"
+        self._sleeping = False
         self._play(action, ACTION_REPEAT.get(action, 1))
         line = ACTION_LINES.get(action)
         if announce and line:
@@ -100,15 +99,9 @@ class PetController(QObject):
     def hit(self) -> None:
         self.do("hit")
 
-    def sleep(self) -> None:
-        self.do("sleep")
-
     def wake(self) -> None:
         self._sleeping = False
         self._play("idle")
-
-    def eat(self) -> None:
-        self.do("eat")
 
     def wave(self) -> None:
         self.do("wave")
@@ -129,7 +122,7 @@ class PetController(QObject):
         self.bubble.emit(random_bubble(pack.personality))
 
     def _idle_tick(self) -> None:
-        if self._hidden or self._sleeping:
+        if self._hidden:
             return
         if self.player.action not in {"idle", "walk_l", "walk_r"}:
             return
@@ -144,5 +137,3 @@ class PetController(QObject):
             self._hidden = True
             self.vanished.emit(True)
             return
-        if self._sleeping:
-            self._play("sleep")

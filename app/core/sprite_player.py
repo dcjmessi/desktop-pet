@@ -118,7 +118,7 @@ class SpritePlayer(QObject):
                 self._timer.stop()
                 self.frame_changed.emit(self._scaled(self._pixmaps[self._index]))
                 self.action_finished.emit(finished)
-                if finished != "idle" and finished != "sleep":
+                if finished != "idle":
                     self.play("idle")
                 return
         self.frame_changed.emit(self._scaled(self._pixmaps[self._index]))

@@ -219,11 +219,7 @@ class PetWindow(QWidget):
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         if self.hit_test(event.position().toPoint()):
-            if self.controller.sleeping:
-                self._manual_wake()
-                self.show_bubble("醒啦！", 1200)
-            else:
-                self.open_chat()
+            self.open_chat()
             event.accept()
 
     def _show_menu(self, global_pos: QPoint) -> None:
@@ -236,8 +232,6 @@ class PetWindow(QWidget):
             act_menu.addAction(label, lambda a=action: self._manual_action(a))
         menu.addAction("说话", lambda: self.controller.talk_bubble())
         menu.addAction("聊天…", lambda: QTimer.singleShot(0, self.open_chat))
-        if self.controller.sleeping:
-            menu.addAction("叫醒", self._manual_wake)
         menu.addAction("消失", lambda: self._manual_action("vanish"))
         acc_menu = menu.addMenu("配件")
         pack = self.player.pack
@@ -266,10 +260,6 @@ class PetWindow(QWidget):
     def _manual_action(self, action: str) -> None:
         self.controller.do(action)
         self.manual_action.emit(action)
-
-    def _manual_wake(self) -> None:
-        self.controller.wake()
-        self.manual_action.emit("idle")
 
     def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key.Key_Escape and self._chat_open:
