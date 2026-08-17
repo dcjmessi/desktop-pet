@@ -13,7 +13,8 @@
 - 桌面走动（可开关）、缩放、系统托盘
 - 单实例运行：重复启动会直接退出，避免出现两个托盘图标
 
-<img width="845" height="584" alt="128e39c0-8548-45db-86cb-6ec07cf8d5aa" src="https://github.com/user-attachments/assets/7cf87143-44df-4134-b330-3f81afcc0028" />
+<img width="1069" height="612" alt="ScreenShot_2026-08-17_110612_564" src="https://github.com/user-attachments/assets/486c59f8-adef-4100-828c-ad988db427e8" />
+
 
 
 ## 默认宠物
