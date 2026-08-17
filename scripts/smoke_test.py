@@ -14,7 +14,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtCore import QTimer, Qt  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from app.config import ACCESSORIES, ACTIONS, Settings  # noqa: E402
+from app.config import ACCESSORIES, ACTIONS, DISABLED_ACTIONS, Settings  # noqa: E402
 from app.core.dialogue import match_keyword_reply  # noqa: E402
 from app.core.pack import list_packs  # noqa: E402
 from app.main import DesktopPetApp  # noqa: E402
@@ -44,6 +44,8 @@ def run() -> int:
             problems.append(f"{pack.id}: 工坊无法选择并召唤")
             continue
         for action in ACTIONS:
+            if action in DISABLED_ACTIONS:
+                continue
             pet_app.pet.controller.do(action)
             got = pet_app.pet.player.action
             if got != action:

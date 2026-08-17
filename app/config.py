@@ -66,7 +66,8 @@ ACCESSORY_PROMPTS = {
 class Settings:
     walk_enabled: bool = False
     scale: float = 1.0
-    peer_port: int = 38475
+    relay_local_port: int = 38475
+    relay_public_url: str = ""
 
     @classmethod
     def load(cls) -> "Settings":

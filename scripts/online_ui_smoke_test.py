@@ -32,13 +32,11 @@ def run() -> int:
     host.summon("nailong")
     client.summon("dagongniu")
     port = free_port()
-    password = "encrypted-pets"
-    host._host_peer(port, password)
+    host.settings.relay_local_port = port
+    host._create_invite(f"ws://127.0.0.1:{port}")
     QTimer.singleShot(
         100,
-        lambda: client._connect_peer(
-            "127.0.0.1", port, password
-        ),
+        lambda: client._join_invite(host.tool.invite_code.text()),
     )
     stage = {"value": 0}
     failures: list[str] = []

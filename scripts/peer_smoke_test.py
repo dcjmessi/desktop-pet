@@ -1,4 +1,4 @@
-"""Loopback test for encrypted peer chat and action synchronization."""
+"""Loopback test for encrypted relay chat and action synchronization."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 from PySide6.QtCore import QCoreApplication, QTimer  # noqa: E402
 
-from app.services.peer import PeerSession  # noqa: E402
+from app.services.relay import Invite, LocalRelay, RelaySession  # noqa: E402
 
 
 def free_port() -> int:
@@ -23,16 +23,14 @@ def free_port() -> int:
 def run() -> int:
     app = QCoreApplication([])
     port = free_port()
-    password = "pet-secret-123"
-    host = PeerSession(
-        "host", "", port, password, {"pet_id": "nailong", "name": "奶龙"}
+    relay = LocalRelay(port)
+    relay.ensure_running()
+    invite = Invite.create(f"ws://127.0.0.1:{port}")
+    host = RelaySession(
+        invite, {"pet_id": "nailong", "name": "奶龙"}, creating=True
     )
-    client = PeerSession(
-        "client",
-        "127.0.0.1",
-        port,
-        password,
-        {"pet_id": "dagongniu", "name": "打工牛"},
+    client = RelaySession(
+        invite, {"pet_id": "dagongniu", "name": "打工牛"}, creating=False
     )
     state: dict[str, object] = {
         "host_peer": None,

@@ -7,11 +7,11 @@ from PySide6.QtCore import QLockFile, QObject, QPoint, Qt
 from PySide6.QtGui import QIcon, QPainter, QColor, QPixmap, QPolygon
 from PySide6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon, QMenu
 
-from app.config import ACCESSORIES, ACTIONS, Settings, AppState
+from app.config import ACCESSORIES, ACTIONS, DISABLED_ACTIONS, Settings, AppState
 from app.core.dialogue import match_keyword_reply
 from app.core.pack import get_pack, list_packs
 from app.paths import DATA, ensure_dirs
-from app.services.peer import PeerSession
+from app.services.relay import Invite, LocalRelay, RelaySession
 from app.ui.pet_window import PetWindow
 from app.ui.tool_window import ToolWindow
 
@@ -93,11 +93,12 @@ class DesktopPetApp(QObject):
         self.pet.walk_toggled.connect(self._walk_toggled)
         self.pet.scale_changed.connect(self._scale_changed)
         self.pet.manual_action.connect(self._send_manual_action)
-        self.tool.peer_host_requested.connect(self._host_peer)
-        self.tool.peer_connect_requested.connect(self._connect_peer)
+        self.tool.relay_create_requested.connect(self._create_invite)
+        self.tool.relay_join_requested.connect(self._join_invite)
         self.tool.peer_disconnect_requested.connect(self._disconnect_peer)
 
-        self.peer_session: PeerSession | None = None
+        self.local_relay: LocalRelay | None = None
+        self.peer_session: RelaySession | None = None
         self.peer_connected = False
         self.remote_pet: PetWindow | None = None
 
@@ -265,43 +266,52 @@ class DesktopPetApp(QObject):
             return None
         return {"pet_id": pack.id, "name": pack.name}
 
-    def _host_peer(self, port: int, password: str) -> None:
+    def _create_invite(self, public_url: str) -> None:
         identity = self._peer_identity()
-        if identity:
-            self._start_peer("host", "", port, password, identity)
+        if not identity:
+            return
+        try:
+            if self.local_relay is None:
+                self.local_relay = LocalRelay(self.settings.relay_local_port)
+            self.local_relay.ensure_running()
+            invite = Invite.create(public_url)
+        except (RuntimeError, ValueError) as exc:
+            QMessageBox.warning(self.tool, "无法创建邀请码", str(exc))
+            return
+        self.tool.set_invite_code(invite.encode())
+        self._start_relay_session(invite, identity, creating=True)
 
-    def _connect_peer(
-        self, host: str, port: int, password: str
-    ) -> None:
+    def _join_invite(self, code: str) -> None:
         identity = self._peer_identity()
-        if identity:
-            self._start_peer(
-                "client", host, port, password, identity
-            )
+        if not identity:
+            return
+        try:
+            invite = Invite.decode(code)
+        except ValueError as exc:
+            QMessageBox.warning(self.tool, "无法加入邀请码", str(exc))
+            return
+        self._start_relay_session(invite, identity, creating=False)
 
-    def _start_peer(
-        self,
-        mode: str,
-        host: str,
-        port: int,
-        password: str,
-        identity: dict[str, str],
+    def _start_relay_session(
+        self, invite: Invite, identity: dict[str, str], creating: bool
     ) -> None:
         self._disconnect_peer()
         self.peer_connected = False
-        session = PeerSession(mode, host, port, password, identity)
+        session = RelaySession(invite, identity, creating)
         self.peer_session = session
         session.status_changed.connect(
             lambda text: self.tool.set_peer_status(text, True)
         )
         session.connected.connect(self._peer_connected)
         session.packet_received.connect(self._peer_packet)
-        session.disconnected.connect(self._peer_disconnected)
+        session.disconnected.connect(
+            lambda reason, current=session: self._peer_disconnected(current, reason)
+        )
         session.finished.connect(
             lambda current=session: self._peer_finished(current)
         )
         self.tool.set_peer_status(
-            "正在启动主机…" if mode == "host" else "正在连接…", True
+            "正在创建邀请码…" if creating else "正在加入邀请码…", True
         )
         session.start()
 
@@ -317,7 +327,6 @@ class DesktopPetApp(QObject):
             return
         self._show_remote_pet(pack)
         self.peer_connected = True
-        self.tool.peer_password.clear()
         self.tool.set_peer_status(
             f"已连接：{pack.name}（端到端加密）", True
         )
@@ -348,7 +357,7 @@ class DesktopPetApp(QObject):
                 self.remote_pet.show_bubble(text, 5000)
         elif kind == "action" and self.remote_pet is not None:
             action = str(packet.get("action") or "")
-            if action in ACTIONS:
+            if action in ACTIONS and action not in DISABLED_ACTIONS:
                 if action == "appear":
                     self.remote_pet.show()
                 self.remote_pet.controller.do(action, announce=False)
@@ -359,7 +368,7 @@ class DesktopPetApp(QObject):
                 self._show_remote_pet(pack)
 
     def _send_manual_action(self, action: str) -> None:
-        if action in ACTIONS:
+        if action in ACTIONS and action not in DISABLED_ACTIONS:
             self._send_peer_packet({"type": "action", "action": action})
 
     def _send_peer_packet(self, packet: dict) -> None:
@@ -389,8 +398,8 @@ class DesktopPetApp(QObject):
         if hasattr(self, "tool"):
             self.tool.set_peer_status("未连接", False)
 
-    def _peer_disconnected(self, reason: str) -> None:
-        if self.peer_session is None:
+    def _peer_disconnected(self, session: RelaySession, reason: str) -> None:
+        if self.peer_session is not session:
             return
         self.peer_connected = False
         if self.remote_pet is not None:
@@ -399,7 +408,7 @@ class DesktopPetApp(QObject):
             self.remote_pet = None
         self.tool.set_peer_status(reason, False)
 
-    def _peer_finished(self, session: PeerSession) -> None:
+    def _peer_finished(self, session: RelaySession) -> None:
         if self.peer_session is session:
             self.peer_session = None
             self.peer_connected = False
