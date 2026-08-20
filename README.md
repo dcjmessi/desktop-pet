@@ -1,64 +1,78 @@
-# 桌面宠物工坊（Python / PySide6）
+# Desktop Pet Workshop / 桌面宠物工坊
 
-经典透明 PNG 桌宠：工具窗管理 + 置顶宠窗互动。
+一个使用 Python 与 PySide6 构建的 Windows 透明桌面宠物应用：支持多宠物动画、配件、关键词互动、系统托盘，以及基于邀请码的一对一加密联机。
 
-> 默认宠物素材来自公开的 Codex 桌宠画廊（粉丝作品），**仅供个人学习，请勿商用分发**。见 `assets/pets/NOTICE.txt`。
+> A Windows desktop-pet application built with Python and PySide6. It combines animated transparent pets, pre-rendered accessories, keyword chat, tray controls, and encrypted peer-to-peer interaction through invitation codes.
 
-## 功能
+![Desktop Pet Workshop preview](docs/media/workshop-preview.png)
 
-- 默认五宠真实多帧动画：待机、左右走动、招手、跳跃、跳舞、思考、害羞、挨打、消失/出现
-- 配件：**预烘整套帧包**切换（头部/眼睛/倾角逐帧对位，帽子含阴影、材质和高光），解码缓存后即时切换
-- 关键词对话：宠物身上内联输入框，回车即回，并触发对应动作
-- 一对一互联网联机：花生壳映射 + 邀请码、端到端加密、第二只远程宠物、原文气泡和手动动作同步
-- 桌面走动（可开关）、缩放、系统托盘
-- 单实例运行：重复启动会直接退出，避免出现两个托盘图标
+> Demo videos are prepared in `release/效果图/` locally. Because `release/` is intentionally ignored by Git, upload the selected MP4 to the GitHub `v1.0.3` Release instead of committing it to the repository.
 
-<img width="1069" height="612" alt="ScreenShot_2026-08-17_110612_564" src="https://github.com/user-attachments/assets/486c59f8-adef-4100-828c-ad988db427e8" />
+## Features
 
+- Five built-in pets with real multi-frame animations: idle, walk, wave, jump, dance, think, shy, hit, vanish and appear
+- Nine pre-rendered accessory sets with frame-by-frame alignment and cached switching
+- Inline keyword chat with matching reactions and animation triggers
+- One-to-one online mode with invitation codes, encrypted messages and synchronized manual actions
+- Optional desktop walking, scaling, system-tray controls and single-instance protection
+- Portable Windows build produced with PyInstaller; the target computer does not need Python
 
+## Quick Start
 
-## 默认宠物
-
-| ID | 名称 | 素材来源 |
-|----|------|----------|
-| `nailong` | 奶龙 | `erich207/nailong-codex-pet` |
-| `dagongniu` | 打工牛 | 画廊 `niumou--jarvis-2` |
-| `salarycat` | 打工猫 | 画廊 `salary-cat--zuochunjie` |
-| `koukou` | 扣扣企鹅 | 画廊 `koukou-penguin--hoody` |
-| `capybara` | 水豚噜噜 | 画廊 `capybara-lulu--jiushu` |
-
-要增加宠物可拿到对应精灵表（1536×1872 或 1536×2288 的 8 列 webp/png），放入 `data/_sheet_cache/<id>.webp`
-后在 `scripts/build_pets.py` 的 `PETS` 里加一条，再重建即可。
-
-## 运行
-
-必须在项目根目录：
+Requirements: Windows 10/11 and Python 3.10 or newer.
 
 ```powershell
+git clone https://github.com/dcjmessi/desktop-pet.git
+cd desktop-pet
 python -m venv .venv
-.\.venv\Scripts\pip install -r requirements.txt
+.\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m app.main
 ```
 
-或双击根目录的 `run.bat`。
+也可以在依赖安装完成后双击根目录的 `run.bat`。
 
-打包 Windows 免安装发布版：
+## 项目结构 / Project Structure
 
-```powershell
-.\.venv\Scripts\pip install -r requirements-build.txt
-powershell -ExecutionPolicy Bypass -File .\scripts\build_release.ps1
+```text
+desktop-pet/
+├─ app/
+│  ├─ core/       # 动画、精灵播放、行为控制和宠物包读取
+│  ├─ services/   # 配件、素材处理和加密联机服务
+│  ├─ ui/         # 宠物窗口与工坊窗口
+│  └─ main.py     # 应用入口与生命周期
+├─ assets/
+│  └─ pets/       # 内置宠物帧、配件变体及素材声明
+├─ scripts/
+│  ├─ smoke_test.py
+│  ├─ peer_smoke_test.py
+│  ├─ online_ui_smoke_test.py
+│  ├─ build_pets.py
+│  └─ build_release.ps1
+├─ desktop_pet.spec
+├─ requirements.txt
+└─ requirements-build.txt
 ```
 
-输出位于 `release\DesktopPetWorkshop-v1.0.3-win64.zip`。目标电脑无需安装 Python，必须解压并复制整个文件夹，不能只复制 EXE。
+## 使用说明
 
-重建默认素材与配件帧包（联网下载精灵表，约 1 分钟）：
+| 操作 | 说明 |
+|---|---|
+| 左键拖拽 | 移动宠物，仅非透明像素区域响应 |
+| 双击宠物 | 打开内联聊天输入框 |
+| 右键 → 做动作 | 招手、跳跃、跳舞、思考、害羞、打它 |
+| 右键 → 配件 | 切换预烘配件 |
+| 右键 → 缩放 / 桌面走动 / 打开工坊 | 调整常用设置 |
+| 系统托盘 | 显示宠物、打开工坊或退出 |
 
-```powershell
-.\.venv\Scripts\python scripts\build_pets.py            # 全部
-.\.venv\Scripts\python scripts\build_pets.py nailong    # 单个
-```
+## 互联网联机
 
-自检：
+联机模式一次连接两位用户，并且仅支持双方都具有的内置宠物。主机需要先将本机端口 `38475` 映射为可访问的 HTTP/HTTPS 地址，然后在工坊中创建邀请码；好友粘贴邀请码后即可加入。
+
+聊天文字与动作数据使用端到端加密，映射服务只负责转发。HTTP 地址会转换为 `ws://`，HTTPS 地址会转换为 `wss://`。正式使用建议采用 HTTPS；映射服务是否支持 WebSocket 升级仍需按实际服务配置验证。
+
+## Tests
+
+项目包含三项可在无界面模式运行的 smoke tests，GitHub Actions 会在每次 push 和 pull request 时运行相同命令：
 
 ```powershell
 .\.venv\Scripts\python scripts\smoke_test.py
@@ -66,37 +80,57 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_release.ps1
 .\.venv\Scripts\python scripts\online_ui_smoke_test.py
 ```
 
-## 互联网联机
+- `smoke_test.py`：宠物加载、动作、配件、对话、窗口信号和设置持久化
+- `peer_smoke_test.py`：本机回环下的加密聊天与动作同步
+- `online_ui_smoke_test.py`：两个应用控制器之间的端到端联机 UI 流程
 
-联机仅支持双方都有的五只默认宠物，一次连接两位用户。
+这些测试覆盖关键路径，但不替代真实 Windows 桌面交互、系统托盘和公网映射服务的人工验收。
 
-主机先在花生壳创建 HTTP 或 HTTPS 映射，映射到本机端口 `38475`。然后在工坊填写映射地址并点击“创建邀请码”，把邀请码发给好友；好友粘贴邀请码后点击“加入邀请码”。聊天文字与动作数据会在两台电脑之间加密，花生壳映射只负责转发。
+## Build a Portable Windows Release
 
-HTTP 地址会自动转换为 `ws://`，HTTPS 地址会自动转换为 `wss://`。HTTP 不加密传输层，正式使用建议改为 HTTPS。花生壳是否对当前映射透传 WebSocket 升级请求，必须以实际联机测试结果为准。
-
-## 桌宠操作
-
-| 操作 | 说明 |
-|------|------|
-| 左键拖拽 | 移动（仅点在非透明像素上） |
-| 双击 | 打开聊天输入框 |
-| 右键 → 做动作 | 招手 / 跳一下 / 跳舞 / 思考 / 害羞 / 打它 |
-| 右键 → 配件 | 9 套预烘配件即时切换 |
-| 右键 → 缩放、桌面走动、打开工坊 | 其余设置 |
-| 托盘 | 显示宠物 / 打开工坊 / 退出 |
-
-
-
-## 宠物包结构
-
-```text
-assets/pets/<id>/  或  data/user_pets/<id>/
-  manifest.json
-  base.png
-  actions/<action>/*.png
-  variants/<accessory_id>/<action>/*.png
+```powershell
+.\.venv\Scripts\python -m pip install -r requirements-build.txt
+powershell -ExecutionPolicy Bypass -File .\scripts\build_release.ps1
 ```
 
-## 技术栈
+构建脚本会运行 PyInstaller，并生成：
 
-Python 3.10+ · PySide6 · Pillow · cryptography
+```text
+dist\DesktopPetWorkshop\
+release\DesktopPetWorkshop-v1.0.3-win64.zip
+```
+
+发布包必须先完整解压再运行，不能只复制其中的 EXE。目标电脑无需安装 Python。
+
+## 宠物素材重建
+
+如已获得对应的 8 列精灵表，可将文件放入 `data/_sheet_cache/<id>.webp`，在 `scripts/build_pets.py` 的 `PETS` 中配置宠物后重建：
+
+```powershell
+.\.venv\Scripts\python scripts\build_pets.py
+.\.venv\Scripts\python scripts\build_pets.py nailong
+```
+
+联网下载的实际可用性、来源条款和精灵表尺寸应由使用者再次核实。
+
+## Built-in Pets
+
+| ID | 名称 | README 中记录的来源 |
+|---|---|---|
+| `nailong` | 奶龙 | `erich207/nailong-codex-pet` |
+| `dagongniu` | 打工牛 | Codex 桌宠画廊 `niumou--jarvis-2` |
+| `salarycat` | 打工猫 | Codex 桌宠画廊 `salary-cat--zuochunjie` |
+| `koukou` | 扣扣企鹅 | Codex 桌宠画廊 `koukou-penguin--hoody` |
+| `capybara` | 水豚噜噜 | Codex 桌宠画廊 `capybara-lulu--jiushu` |
+
+## License and Asset Notice
+
+本仓库的 Python 源代码、脚本和项目配置采用 [MIT License](LICENSE)，但该许可证**不覆盖** `assets/pets/` 中的宠物图像、动画帧、配件帧及其他第三方资源。
+
+内置宠物素材来自 README/`assets/pets/NOTICE.txt` 中记录的公开粉丝作品，仅用于个人学习与评估，不授权商用或再次分发。仓库中的来源记录不是完整的权利证明；在复制、修改、发布安装包或用于商业项目之前，必须由使用者向原作者核实授权。若无法确认授权，请替换或移除相关素材。
+
+> The MIT License applies to the repository's source code, scripts, and project configuration only. It does not grant rights to bundled pet artwork, animation frames, accessory frames, or other third-party assets. Verify permission with the original creators before redistribution or commercial use.
+
+## Tech Stack
+
+Python 3.10+ · PySide6 · Pillow · cryptography · websockets · PyInstaller
